@@ -1,5 +1,6 @@
-const taskInput = document.querySelector("#task-input input");
-filters = document.querySelectorAll(".task-box");
+const taskInput = document.querySelector("#task-input input"),
+filters = document.querySelectorAll(".filters span"),
+clearAll = document.querySelector(".clear-btn"),
 taskBox = document.querySelector(".task-box");
 
 let editId;
@@ -8,12 +9,23 @@ let isEditedTask = false;
 // inputando os itens no localStorage do navegador
 let todos = JSON.parse(localStorage.getItem("todo-list"));
 
-function showTodo(){
+filters.forEach(btn => {
+btn.addEventListener("click",() =>{
+
+	document.querySelector("span.active").classList.remove("active");
+	btn.classList.add("active");
+	showTodo(btn.id);
+	})
+
+});
+
+function showTodo(filter){
 	let li = "";
 	 if(todos){
 	 	todos.forEach((todo, id) => {
-	 		let isCompleted = todo.status == "completado" ? "checked" : "";
-	 	li += `<li class="task">
+	 		let isCompleted = todo.status == "completed" ? "checked" : "";
+	 		if(filter == todo.status || filter == "all") {
+	 			li += `<li class="task">
 				<label for="${id}">
 					<input onclick="updateStatus(this)" type="checkbox" id="${id}" ${isCompleted}>
 					<p class="${isCompleted}">${todo.name}</p>
@@ -26,11 +38,12 @@ function showTodo(){
 					</ul>
 				</div>
 			</li>`;
+		}
 	 });
 	 }
-	 taskBox.innerHTML = li;
+	 taskBox.innerHTML = li || `<span>Sem tarefas registradas.</span>`;
 }
-showTodo();
+showTodo("all");
 
 function showMenu(selectedTask){
 	let taskMenu = selectedTask.parentElement.lastElementChild;
@@ -51,14 +64,21 @@ function editTask(taskId, taskName){
 function deleteTask(deleteId){
 	todos.splice(deleteId,1);
 	localStorage.setItem("todo-list",JSON.stringify(todos));
-	showTodo();
+	showTodo("all");
 }
+
+clearAll.addEventListener("click", ()=>{
+	todos.splice(0,todos.length);
+	localStorage.setItem("todo-list",JSON.stringify(todos));
+	showTodo("all");
+
+});
 
 function updateStatus(selectedTask){
 	let taskName = selectedTask.parentElement.lastElementChild;
 	if(selectedTask.checked){
 			taskName.classList.add("checked");
-			todos[selectedTask.id].status = "completado";
+			todos[selectedTask.id].status = "completed";
 	}else {
 			taskName.classList.remove("checked");
 			todos[selectedTask.id].status = "pendente";
@@ -82,6 +102,6 @@ taskInput.addEventListener("keyup", e => {
 	
 	taskInput.value ="";
 	localStorage.setItem("todo-list",JSON.stringify(todos));
-	showTodo();
+	showTodo("all");
 	}
 });
